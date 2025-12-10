@@ -1,40 +1,42 @@
 import 'dart:async';
+import 'package:flutter/material.dart';
 import 'package:mobx/mobx.dart';
-import 'package:finance/finance.dart';
 
 part 'home_store.g.dart';
 
 /// Home Store
 ///
 /// Ana sayfa state'ini ve otomatik yenileme mantığını yönetir.
+/// Finance modülüne bağımlı değil, callback'ler üzerinden çalışır.
 @StoreConfig()
 class HomeStore = _HomeStore with _$HomeStore;
 
 abstract class _HomeStore with Store {
-  final DollarChartStore dollarChartStore;
-  final EuroChartStore euroChartStore;
+  /// Chart'ları yenilemek için callback fonksiyonlar
+  final List<VoidCallback> refreshCallbacks;
 
   Timer? _refreshTimer;
   static const Duration _refreshInterval = Duration(seconds: 10);
 
   _HomeStore({
-    required this.dollarChartStore,
-    required this.euroChartStore,
+    required this.refreshCallbacks,
   });
 
   /// Chart'ları yükler ve otomatik yenilemeyi başlatır
   @action
   void initialize() {
     // İlk yükleme
-    dollarChartStore.loadChart();
-    euroChartStore.loadChart();
+    for (final callback in refreshCallbacks) {
+      callback();
+    }
 
     // Otomatik yenileme timer'ını başlat
     _refreshTimer = Timer.periodic(
       _refreshInterval,
       (_) {
-        dollarChartStore.loadChart();
-        euroChartStore.loadChart();
+        for (final callback in refreshCallbacks) {
+          callback();
+        }
       },
     );
   }

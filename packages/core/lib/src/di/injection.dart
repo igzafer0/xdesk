@@ -1,21 +1,23 @@
 import 'package:get_it/get_it.dart';
+import 'package:injectable/injectable.dart';
 
 import '../cache/hive_storage.dart';
 import '../cache/local_storage.dart';
 import '../network/api_client.dart';
 import '../store/app_store.dart';
+import 'injection.config.dart';
 
 /// GetIt instance
 final getIt = GetIt.instance;
 
 /// Initializes dependency injection
 /// 
-/// Tüm bağımlılıkları GetIt'e kaydeder.
-/// Injectable annotation'ları build_runner ile generate edilecek.
+/// Injectable annotation'ları ile otomatik DI setup
+@InjectableInit(initializerName: 'init', preferRelativeImports: true, asExtension: true)
 Future<void> configureDependencies({
   required String apiBaseUrl,
 }) async {
-  // Hive Storage'ı başlat
+  // Hive Storage'ı başlat (Injectable ile otomatik register edilecek ama init gerekli)
   final storage = HiveStorage();
   final storageInitResult = await storage.init();
   
@@ -24,18 +26,20 @@ Future<void> configureDependencies({
     (_) => null,
   );
 
-  // LocalStorage'ı kaydet (interface olarak)
-  getIt.registerLazySingleton<LocalStorage>(() => storage);
+  // Injectable ile otomatik register (HiveStorage)
+  getIt.init();
 
-  // AppStore'u kaydet
+  // API Client için config gerekli, manuel register (Injectable değil, config gerekiyor)
+  if (!getIt.isRegistered<ApiClient>()) {
+    final apiClient = ApiClient(
+      config: ApiConfig(baseUrl: apiBaseUrl),
+    );
+    getIt.registerLazySingleton<ApiClient>(() => apiClient);
+  }
+
+  // AppStore'u kaydet (Injectable değil, manuel)
   final appStore = AppStore();
   getIt.registerLazySingleton<AppStore>(() => appStore);
-
-  // API Client'ı kaydet (auth olmadan)
-  final apiClient = ApiClient(
-    config: ApiConfig(baseUrl: apiBaseUrl),
-  );
-  getIt.registerLazySingleton<ApiClient>(() => apiClient);
 }
 
 /// Clears all registered dependencies

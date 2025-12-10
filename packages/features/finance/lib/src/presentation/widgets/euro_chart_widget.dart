@@ -16,12 +16,6 @@ class EuroChartWidget extends StatelessWidget {
   Widget build(BuildContext context) {
     return Observer(
       builder: (_) {
-        if (store.isLoading && store.chart == null) {
-          return const Center(
-            child: CircularProgressIndicator(),
-          );
-        }
-
         if (store.errorMessage != null && store.chart == null) {
           return ChartErrorWidget(
             message: store.errorMessage!,
@@ -30,9 +24,7 @@ class EuroChartWidget extends StatelessWidget {
         }
 
         if (store.chart == null || store.chart!.points.isEmpty) {
-          return const Center(
-            child: Text('Veri bulunamadı', style: AppTypography.bodyMedium),
-          );
+          return const SizedBox.shrink();
         }
 
         // Son 24 saatlik verileri göster

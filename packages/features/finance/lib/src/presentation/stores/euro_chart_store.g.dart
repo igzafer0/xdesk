@@ -27,24 +27,6 @@ mixin _$EuroChartStore on _EuroChartStore, Store {
     });
   }
 
-  late final _$isLoadingAtom = Atom(
-    name: '_EuroChartStore.isLoading',
-    context: context,
-  );
-
-  @override
-  bool get isLoading {
-    _$isLoadingAtom.reportRead();
-    return super.isLoading;
-  }
-
-  @override
-  set isLoading(bool value) {
-    _$isLoadingAtom.reportWrite(value, super.isLoading, () {
-      super.isLoading = value;
-    });
-  }
-
   late final _$errorMessageAtom = Atom(
     name: '_EuroChartStore.errorMessage',
     context: context,
@@ -87,7 +69,6 @@ mixin _$EuroChartStore on _EuroChartStore, Store {
   String toString() {
     return '''
 chart: ${chart},
-isLoading: ${isLoading},
 errorMessage: ${errorMessage}
     ''';
   }

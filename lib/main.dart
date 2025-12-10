@@ -27,22 +27,39 @@ void main() async {
   // Finance modülü bağımlılıklarını kaydet
   setupFinanceDependencies();
 
-  // Home modülü bağımlılıklarını kaydet
-  setupHomeDependencies();
+  // Finance store'larını al
+  final dollarChartStore = GetIt.instance<DollarChartStore>();
+  final euroChartStore = GetIt.instance<EuroChartStore>();
+
+  // Home modülü bağımlılıklarını kaydet (callback'ler ile)
+  setupHomeDependencies(
+    refreshCallbacks: [
+      () => dollarChartStore.loadChart(),
+      () => euroChartStore.loadChart(),
+    ],
+  );
 
   // Home store'u başlat (timer'ı başlatır)
   final homeStore = GetIt.instance<HomeStore>();
   homeStore.initialize();
   
-  runApp(XDeskApp(homeStore: homeStore));
+  runApp(XDeskApp(
+    homeStore: homeStore,
+    dollarChartStore: dollarChartStore,
+    euroChartStore: euroChartStore,
+  ));
 }
 
 class XDeskApp extends StatelessWidget {
   final HomeStore homeStore;
+  final DollarChartStore dollarChartStore;
+  final EuroChartStore euroChartStore;
 
   const XDeskApp({
     super.key,
     required this.homeStore,
+    required this.dollarChartStore,
+    required this.euroChartStore,
   });
 
   @override
@@ -69,7 +86,13 @@ class XDeskApp extends StatelessWidget {
         ),
       ),
       themeMode: ThemeMode.dark, // Her zaman dark mode
-      home: HomePage(store: homeStore),
+      home: HomePage(
+        store: homeStore,
+        children: [
+          DollarChartWidget(store: dollarChartStore),
+          EuroChartWidget(store: euroChartStore),
+        ],
+      ),
     );
   }
 }

@@ -22,7 +22,7 @@ class ApiConfig {
 }
 
 /// Dio-based API Client
-/// 
+///
 /// Tüm network işlemleri için merkezi client.
 /// Interceptors ve error handling içerir.
 /// Tüm istekler auth olmadan yapılır.

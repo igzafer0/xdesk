@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 import 'package:design_system/design_system.dart';
-import 'package:finance/finance.dart';
 import '../stores/home_store.dart';
 
 /// Ana Sayfa
 ///
-/// Dolar ve Euro chart'larını gösterir.
+/// Widget'ları dışarıdan alır, modül bağımsızlığını korur.
 class HomePage extends StatefulWidget {
   final HomeStore store;
+  final List<Widget> children;
 
   const HomePage({
     super.key,
     required this.store,
+    required this.children,
   });
 
   @override
@@ -33,11 +34,13 @@ class _HomePageState extends State<HomePage> {
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.md),
           child: Column(
-            children: [
-              DollarChartWidget(store: widget.store.dollarChartStore),
-              const SizedBox(height: AppSpacing.md),
-              EuroChartWidget(store: widget.store.euroChartStore),
-            ],
+            children: widget.children
+                .expand((widget) => [
+                      widget,
+                      const SizedBox(height: AppSpacing.md),
+                    ])
+                .take(widget.children.length * 2 - 1)
+                .toList(),
           ),
         ),
       ),

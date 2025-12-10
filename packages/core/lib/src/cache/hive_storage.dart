@@ -1,5 +1,6 @@
 import 'package:fpdart/fpdart.dart';
 import 'package:hive_flutter/hive_flutter.dart';
+import 'package:injectable/injectable.dart';
 import '../errors/failures.dart';
 import 'local_storage.dart';
 
@@ -7,6 +8,7 @@ import 'local_storage.dart';
 /// 
 /// Hive kullanarak local storage işlemlerini gerçekleştirir.
 /// Interface arkasında gizlenmiştir.
+@LazySingleton(as: LocalStorage)
 class HiveStorage implements LocalStorage {
   static const String _boxName = 'xdesk_storage';
   Box? _box;

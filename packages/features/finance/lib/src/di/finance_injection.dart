@@ -10,29 +10,31 @@ import '../presentation/stores/euro_chart_store.dart';
 
 /// Finance modülü bağımlılıklarını kaydeder
 ///
-/// Bu fonksiyon finance modülünün tüm bağımlılıklarını GetIt'e kaydeder.
+/// Injectable annotation'ları eklendi ama cross-module dependency'ler
+/// (ApiClient, LocalStorage) manuel register ediliyor.
+/// Gelecekte Injectable module system ile tam otomatik hale getirilebilir.
 void setupFinanceDependencies() {
   final getIt = GetIt.instance;
 
-  // Data Sources
+  // Data Sources (Injectable annotation var ama cross-module dependency manuel)
   final currencyRemoteSource = CurrencyRemoteSource(getIt<ApiClient>());
   getIt.registerLazySingleton<CurrencyRemoteSource>(() => currencyRemoteSource);
 
-  // Repositories
+  // Repositories (Injectable annotation var ama cross-module dependency manuel)
   final currencyRepository = CurrencyRepositoryImpl(
     remoteSource: getIt<CurrencyRemoteSource>(),
     cache: getIt<LocalStorage>(),
   );
   getIt.registerLazySingleton<CurrencyRepository>(() => currencyRepository);
 
-  // Use Cases
+  // Use Cases (Injectable annotation var)
   final getDollarHistory = GetDollarHistory(getIt<CurrencyRepository>());
   getIt.registerLazySingleton<GetDollarHistory>(() => getDollarHistory);
 
   final getEuroHistory = GetEuroHistory(getIt<CurrencyRepository>());
   getIt.registerLazySingleton<GetEuroHistory>(() => getEuroHistory);
 
-  // Stores
+  // Stores (Injectable annotation var)
   final dollarChartStore = DollarChartStore(getIt<GetDollarHistory>());
   getIt.registerLazySingleton<DollarChartStore>(() => dollarChartStore);
 

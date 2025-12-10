@@ -1,4 +1,5 @@
 import 'package:mobx/mobx.dart';
+import 'package:injectable/injectable.dart';
 import '../../domain/entities/currency_chart.dart';
 import '../../domain/use_cases/get_euro_history.dart';
 
@@ -7,6 +8,7 @@ part 'euro_chart_store.g.dart';
 /// Euro Chart Store
 /// 
 /// MobX store - State yönetimi
+@lazySingleton
 @StoreConfig()
 class EuroChartStore = _EuroChartStore with _$EuroChartStore;
 
@@ -19,15 +21,11 @@ abstract class _EuroChartStore with Store {
   CurrencyChart? chart;
 
   @observable
-  bool isLoading = false;
-
-  @observable
   String? errorMessage;
 
   /// Euro history verilerini yükler
   @action
   Future<void> loadChart() async {
-    isLoading = true;
     errorMessage = null;
 
     final result = await getEuroHistory();
@@ -42,8 +40,6 @@ abstract class _EuroChartStore with Store {
         errorMessage = null;
       },
     );
-
-    isLoading = false;
   }
 
   /// Chart'ı yeniler

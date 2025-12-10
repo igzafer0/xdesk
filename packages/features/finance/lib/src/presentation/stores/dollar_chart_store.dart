@@ -1,4 +1,5 @@
 import 'package:mobx/mobx.dart';
+import 'package:injectable/injectable.dart';
 import '../../domain/entities/currency_chart.dart';
 import '../../domain/use_cases/get_dollar_history.dart';
 
@@ -7,6 +8,7 @@ part 'dollar_chart_store.g.dart';
 /// Dollar Chart Store
 /// 
 /// MobX store - State yönetimi
+@lazySingleton
 @StoreConfig()
 class DollarChartStore = _DollarChartStore with _$DollarChartStore;
 
@@ -19,15 +21,11 @@ abstract class _DollarChartStore with Store {
   CurrencyChart? chart;
 
   @observable
-  bool isLoading = false;
-
-  @observable
   String? errorMessage;
 
   /// Dolar history verilerini yükler
   @action
   Future<void> loadChart() async {
-    isLoading = true;
     errorMessage = null;
 
     final result = await getDollarHistory();
@@ -42,8 +40,6 @@ abstract class _DollarChartStore with Store {
         errorMessage = null;
       },
     );
-
-    isLoading = false;
   }
 
   /// Chart'ı yeniler

@@ -25,6 +25,7 @@ Her yeni feature, modül veya değişiklik yapılmadan önce aşağıdaki maddel
 ### ✅ Performans Kontrolleri
 
 - [ ] **Main Thread:** JSON parse, filtreleme, ağır işlemler `Isolates` (compute) içinde mi?
+- [ ] **JSON Parsing:** JSON parsing işlemleri top-level fonksiyonlar ile `compute()` içinde mi?
 - [ ] **Tree Shaking:** Kullanılmayan import'lar ve kütüphaneler temizlenmiş mi?
 - [ ] **Cache-First:** Veri önce cache'den mi gösteriliyor, sonra güncelleniyor mu?
 
@@ -33,12 +34,13 @@ Her yeni feature, modül veya değişiklik yapılmadan önce aşağıdaki maddel
 - [ ] **Explicit Error:** `try-catch` ile hata yutulmuş mu? ❌ YASAK!
 - [ ] **Either Tipi:** Fonksiyonlar `Either<Failure, Success>` döndürüyor mu?
 - [ ] **Kullanıcı Mesajı:** Teknik hata (404, 500) yerine anlamlı mesaj gösteriliyor mu?
+- [ ] **Hata Loglama:** Kritik olmayan hatalar (cache parse) loglanıyor mu? (debugPrint)
+- [ ] **fold() Async:** `fold()` içinde async callback kullanılmış mı? ❌ YASAK!
 
 ### ✅ UI/UX Kontrolleri
 
 - [ ] **Dark Mode:** Sadece dark mode renkleri kullanılmış mı? (#000000, #121212)
 - [ ] **Türkçe:** Tüm metinler Türkçe mi?
-- [ ] **Loading State:** Skeleton loading ekranı var mı? Boş ekran gösterilmiş mi? ❌ YASAK!
 - [ ] **Feedback:** Kullanıcı aksiyonlarında Snackbar/Toast gösteriliyor mu?
 
 ### ✅ Kod Kalitesi Kontrolleri
@@ -53,15 +55,16 @@ Her yeni feature, modül veya değişiklik yapılmadan önce aşağıdaki maddel
 
 Bu maddeler **ASLA** yapılmamalıdır:
 
-1. ❌ **Feature modülleri birbirini import etmez** → Core üzerinden haberleşme
+1. ❌ **Feature modülleri birbirini import etmez** → Core üzerinden haberleşme (ADR-008)
 2. ❌ **Provider veya InheritedWidget kullanılmaz** → Sadece GetIt + MobX
 3. ❌ **setState kullanılmaz** → Sadece MobX Store + Observer
 4. ❌ **BuildContext logic katmanına sokulmaz** → Context-free architecture
 5. ❌ **try-catch ile hata yutulmaz** → Either<Failure, Success> kullanılır
-6. ❌ **Main thread'de ağır işlem yapılmaz** → Isolates (compute) kullanılır
-7. ❌ **Boş ekran gösterilmez** → Skeleton loading zorunlu
-8. ❌ **Light mode desteği eklenmez** → Sadece dark mode
-9. ❌ **Kullanılmayan kod ve kütüphane bırakılmaz** → Tree shaking
+6. ❌ **Main thread'de ağır işlem yapılmaz** → Isolates (compute) kullanılır (ADR-010)
+7. ❌ **fold() içinde async callback kullanılmaz** → Async işlemler fold() dışında yapılır
+8. ❌ **Skeleton loading veya loading yapısı kullanılmaz** → Loading state gösterilmez
+9. ❌ **Light mode desteği eklenmez** → Sadece dark mode
+10. ❌ **Kullanılmayan kod ve kütüphane bırakılmaz** → Tree shaking
 
 ---
 
@@ -104,6 +107,22 @@ Bu maddeler **ASLA** yapılmamalıdır:
 **Not:** Gelecekte authentication gerektiğinde token mekanizması tekrar eklenebilir.
 **Alternatifler:** JWT Token, OAuth, API Key → Şu an için gerekli değil.
 
+### ADR-008: Module Independence Pattern
+**Karar:** Feature modülleri birbirini import etmez. Modüller arası iletişim callback pattern ile yapılır.
+**Neden:** Modülerlik, bağımsızlık, test edilebilirlik, gelecekte ayrı paketlere dönüştürülebilirlik.
+**Uygulama:** Ana uygulama (main.dart) modülleri birleştirir ve callback'ler üzerinden haberleştirir.
+**Örnek:** Home modülü finance modülünü import etmez, refresh callback'leri alır.
+
+### ADR-009: Auto-Refresh Mechanism
+**Karar:** Chart verileri 10 saniyede bir otomatik olarak yenilenir.
+**Neden:** Güncel veri gösterimi, kullanıcı deneyimi.
+**Uygulama:** HomeStore içinde Timer.periodic kullanılır, callback'ler üzerinden chart'lar yenilenir.
+
+### ADR-010: JSON Parsing in Isolates
+**Karar:** Tüm JSON parsing işlemleri `compute()` ile isolate'te yapılır.
+**Neden:** Main thread'i bloklamamak, UI performansı, kullanıcı deneyimi.
+**Uygulama:** Top-level fonksiyonlar oluşturulur ve `compute()` ile çağrılır.
+
 ---
 
 ## 📊 PROJE DURUMU (PROJECT STATUS)
@@ -115,13 +134,32 @@ Bu maddeler **ASLA** yapılmamalıdır:
 - ✅ **Cache Modülü:** LocalStorage interface ve Hive implementation
 - ✅ **Network Modülü:** API Client (Dio), Interceptors (Logging)
 - ✅ **Store Modülü:** Global AppStore (MobX) - User state yönetimi
-- ✅ **DI Modülü:** GetIt dependency injection setup
+- ✅ **DI Modülü:** GetIt + Injectable dependency injection setup
 - ✅ **Export:** Tüm modüller core.dart üzerinden export edildi
 
+#### Design System Paketi (packages/design_system)
+- ✅ **Tokens:** Colors, Spacing, Typography
+- ✅ **Components:** Buttons, Cards, Inputs
+- ✅ **Dark Mode:** Sadece dark mode renkleri
+
+#### Finance Modülü (packages/features/finance)
+- ✅ **Domain:** CurrencyChart, CurrencyChartPoint entities, UseCases, Repository interface
+- ✅ **Data:** CurrencyRemoteSource, CurrencyRepositoryImpl, DTOs
+- ✅ **Presentation:** DollarChartStore, EuroChartStore, Chart widgets (fl_chart)
+- ✅ **Features:** Dollar ve Euro chart'ları, son 24 saat verisi, cache-first yaklaşım
+- ✅ **DI:** Finance injection setup (Injectable annotations)
+
+#### Home Modülü (packages/features/home)
+- ✅ **Presentation:** HomePage, HomeStore
+- ✅ **Features:** Auto-refresh mekanizması (10 saniye), callback pattern ile modül bağımsızlığı
+- ✅ **DI:** Home injection setup
+
 #### Ana Uygulama
-- ✅ Dark mode tema kuruldu
-- ✅ Core paketi bağımlılık olarak eklendi
-- ✅ Basit hoş geldin ekranı
+- ✅ Dark mode tema kuruldu (Design System kullanılıyor)
+- ✅ Core, Finance, Home modülleri entegre edildi
+- ✅ Dependency Injection setup tamamlandı
+- ✅ Ana sayfa: Dollar ve Euro chart'ları gösteriliyor
+- ✅ Auto-refresh: Chart'lar 10 saniyede bir otomatik yenileniyor
 
 #### Konfigürasyon
 - ✅ Melos workspace kuruldu
@@ -130,9 +168,9 @@ Bu maddeler **ASLA** yapılmamalıdır:
 
 ### 🚧 Devam Eden / Planlanan
 
-- ⏳ **Design System Paketi:** Tokens ve Components
-- ⏳ **Feature Modülleri:** Finance, News, Account
-- ⏳ **Core Entegrasyonu:** main.dart'a DI setup
+- ⏳ **Test Coverage:** Unit testler (Domain ve Data katmanları için)
+- ⏳ **Yeni Feature Modülleri:** News, Account (gelecekte)
+- ⏳ **Error Monitoring:** Production error tracking (gelecekte)
 
 ---
 
@@ -246,10 +284,8 @@ const Color darkGrey = Color(0xFF121212);     // #121212
 const Color grey = Color(0xFF1E1E1E);         // #1E1E1E (opsiyonel)
 ```
 
-### Loading States
+### Error States
 
-- ✅ **Skeleton Loading:** Veri yüklenirken gösterilir
-- ❌ **Boş Ekran:** Asla gösterilmez
 - ✅ **Error State:** Anlamlı hata mesajı + retry butonu
 
 ### Feedback
@@ -305,14 +341,16 @@ Her PR/MR öncesi kontrol edilecekler:
 
 ## 📝 NOTLAR VE ÖNEMLİ HATIRLATMALAR
 
-1. **Main Thread Kutsaldır:** UI asla donmamalı, ağır işlemler Isolates'te.
-2. **Cache-First:** Her zaman cache'den başla, sonra güncelle.
-3. **Explicit Errors:** Hata yutma, Either kullan.
-4. **Modülerlik:** Feature'lar birbirinden bağımsız.
+1. **Main Thread Kutsaldır:** UI asla donmamalı, ağır işlemler Isolates'te (ADR-010).
+2. **Cache-First:** Her zaman cache'den başla, sonra güncelle (ADR-005).
+3. **Explicit Errors:** Hata yutma, Either kullan. Cache parse hataları loglanır (debugPrint).
+4. **Modülerlik:** Feature'lar birbirinden bağımsız, callback pattern ile haberleşir (ADR-008).
 5. **Context-Free:** Logic'te BuildContext yok.
-6. **Dark Mode Only:** Sadece dark renkler.
+6. **Dark Mode Only:** Sadece dark renkler (ADR-006).
 7. **Türkçe:** Tüm kullanıcı metinleri Türkçe.
 8. **Auth Yok:** Tüm API istekleri authentication olmadan yapılır (ADR-007).
+9. **Auto-Refresh:** Chart verileri 10 saniyede bir otomatik yenilenir (ADR-009).
+10. **fold() Sync:** `fold()` içinde async callback kullanılmaz, async işlemler dışarıda yapılır.
 
 ---
 
@@ -343,13 +381,25 @@ melos run clean
 
 ---
 
-**Son Güncelleme:** Core paketi tamamlandı, token mekanizması kaldırıldı  
-**Versiyon:** 1.1.0  
+**Son Güncelleme:** Finance ve Home modülleri tamamlandı, Design System eklendi  
+**Versiyon:** 1.2.0  
 **Bakım:** Bu dosya her önemli mimari karar sonrası güncellenmelidir.
 
 ---
 
 ## 📝 DEĞİŞİKLİK GEÇMİŞİ (CHANGELOG)
+
+### v1.2.0 - Finance ve Home Modülleri Tamamlandı
+- ✅ Design System paketi tamamlandı (Tokens, Components)
+- ✅ Finance modülü tamamlandı (Dollar ve Euro chart'ları)
+- ✅ Home modülü tamamlandı (HomePage, HomeStore, auto-refresh)
+- ✅ Module independence pattern uygulandı (ADR-008)
+- ✅ Auto-refresh mekanizması eklendi (10 saniye, ADR-009)
+- ✅ JSON parsing isolate'te yapılıyor (ADR-010)
+- ✅ Cache parse hataları loglanıyor (debugPrint)
+- ✅ `fold()` içinde async callback sorunu düzeltildi
+- ✅ Injectable annotations kullanılıyor
+- ✅ Ana uygulama entegrasyonu tamamlandı
 
 ### v1.1.0 - Core Paketi Tamamlandı
 - ✅ Core paketi modülleri tamamlandı (Errors, Cache, Network, Store, DI)

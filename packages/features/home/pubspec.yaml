@@ -19,10 +19,6 @@ dependencies:
   design_system:
     path: ../../design_system
 
-  # Finance feature (widget'ları kullanmak için)
-  finance:
-    path: ../finance
-
   # State Management
   mobx: ^2.2.0+1
   flutter_mobx: ^2.2.0+1
