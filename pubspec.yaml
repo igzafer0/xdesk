@@ -31,6 +31,9 @@ dependencies:
   flutter:
     sdk: flutter
 
+  # Dependency Injection
+  get_it: ^8.0.2
+
   # Core package (local dependency)
   core:
     path: packages/core
@@ -38,6 +41,10 @@ dependencies:
   # Design System package (local dependency)
   design_system:
     path: packages/design_system
+
+  # Finance package (local dependency)
+  finance:
+    path: packages/features/finance
 
 dev_dependencies:
   flutter_test:
