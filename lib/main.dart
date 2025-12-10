@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:design_system/design_system.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,22 +26,22 @@ class XDeskApp extends StatelessWidget {
     return MaterialApp(
       title: 'XDesk',
       debugShowCheckedModeBanner: false,
-      // Dark mode only
+      // Dark mode only - Design System kullanılıyor
       theme: ThemeData(
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF121212),
-          surface: Color(0xFF000000),
-          background: Color(0xFF000000),
-          onPrimary: Colors.white,
-          onSurface: Colors.white,
-          onBackground: Colors.white,
+          primary: AppColors.surfacePrimary,
+          surface: AppColors.backgroundPrimary,
+          background: AppColors.backgroundPrimary,
+          onPrimary: AppColors.textPrimary,
+          onSurface: AppColors.textPrimary,
+          onBackground: AppColors.textPrimary,
         ),
-        scaffoldBackgroundColor: const Color(0xFF000000),
+        scaffoldBackgroundColor: AppColors.backgroundPrimary,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF121212),
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.surfacePrimary,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
       ),
@@ -49,17 +50,17 @@ class XDeskApp extends StatelessWidget {
         useMaterial3: true,
         brightness: Brightness.dark,
         colorScheme: const ColorScheme.dark(
-          primary: Color(0xFF121212),
-          surface: Color(0xFF000000),
-          background: Color(0xFF000000),
-          onPrimary: Colors.white,
-          onSurface: Colors.white,
-          onBackground: Colors.white,
+          primary: AppColors.surfacePrimary,
+          surface: AppColors.backgroundPrimary,
+          background: AppColors.backgroundPrimary,
+          onPrimary: AppColors.textPrimary,
+          onSurface: AppColors.textPrimary,
+          onBackground: AppColors.textPrimary,
         ),
-        scaffoldBackgroundColor: const Color(0xFF000000),
+        scaffoldBackgroundColor: AppColors.backgroundPrimary,
         appBarTheme: const AppBarTheme(
-          backgroundColor: Color(0xFF121212),
-          foregroundColor: Colors.white,
+          backgroundColor: AppColors.surfacePrimary,
+          foregroundColor: AppColors.textPrimary,
           elevation: 0,
         ),
       ),
@@ -85,31 +86,25 @@ class HomeScreen extends StatelessWidget {
             const Icon(
               Icons.dashboard,
               size: 64,
-              color: Colors.white,
+              color: AppColors.textPrimary,
             ),
-            const SizedBox(height: 24),
+            const SizedBox(height: AppSpacing.lg),
             const Text(
               'XDesk\'e Hoş Geldiniz',
-              style: TextStyle(
-                fontSize: 24,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
+              style: AppTypography.headlineMedium,
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: AppSpacing.sm),
             Text(
               'Hyperscale • Zero-Latency',
-              style: TextStyle(
-                fontSize: 16,
-                color: Colors.grey[400],
+              style: AppTypography.bodyLarge.copyWith(
+                color: AppColors.textSecondary,
               ),
             ),
-            const SizedBox(height: 48),
-            const Text(
+            const SizedBox(height: AppSpacing.xxl),
+            Text(
               'Modüler yapı hazır!',
-              style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey,
+              style: AppTypography.bodyMedium.copyWith(
+                color: AppColors.textTertiary,
               ),
             ),
           ],

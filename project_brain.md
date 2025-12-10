@@ -98,6 +98,42 @@ Bu maddeler **ASLA** yapılmamalıdır:
 **Neden:** Tutarlılık, geliştirme hızı, kullanıcı deneyimi odaklı.
 **Alternatifler:** Light/Dark toggle → Reddedildi (gelecekte eklenebilir).
 
+### ADR-007: Authentication Token Mekanizması
+**Karar:** Token mekanizması kaldırıldı. Tüm API istekleri authentication olmadan yapılır.
+**Neden:** Şu an için authentication gerekmemesi, basitlik ve geliştirme hızı.
+**Not:** Gelecekte authentication gerektiğinde token mekanizması tekrar eklenebilir.
+**Alternatifler:** JWT Token, OAuth, API Key → Şu an için gerekli değil.
+
+---
+
+## 📊 PROJE DURUMU (PROJECT STATUS)
+
+### ✅ Tamamlanan Modüller
+
+#### Core Paketi (packages/core)
+- ✅ **Errors Modülü:** Failure sınıfları ve error mapping
+- ✅ **Cache Modülü:** LocalStorage interface ve Hive implementation
+- ✅ **Network Modülü:** API Client (Dio), Interceptors (Logging)
+- ✅ **Store Modülü:** Global AppStore (MobX) - User state yönetimi
+- ✅ **DI Modülü:** GetIt dependency injection setup
+- ✅ **Export:** Tüm modüller core.dart üzerinden export edildi
+
+#### Ana Uygulama
+- ✅ Dark mode tema kuruldu
+- ✅ Core paketi bağımlılık olarak eklendi
+- ✅ Basit hoş geldin ekranı
+
+#### Konfigürasyon
+- ✅ Melos workspace kuruldu
+- ✅ VS Code launch.json yapılandırıldı
+- ✅ Proje dokümantasyonu hazır
+
+### 🚧 Devam Eden / Planlanan
+
+- ⏳ **Design System Paketi:** Tokens ve Components
+- ⏳ **Feature Modülleri:** Finance, News, Account
+- ⏳ **Core Entegrasyonu:** main.dart'a DI setup
+
 ---
 
 ## 📐 KATMAN MİMARİSİ KURALLARI
@@ -276,6 +312,7 @@ Her PR/MR öncesi kontrol edilecekler:
 5. **Context-Free:** Logic'te BuildContext yok.
 6. **Dark Mode Only:** Sadece dark renkler.
 7. **Türkçe:** Tüm kullanıcı metinleri Türkçe.
+8. **Auth Yok:** Tüm API istekleri authentication olmadan yapılır (ADR-007).
 
 ---
 
@@ -306,7 +343,22 @@ melos run clean
 
 ---
 
-**Son Güncelleme:** Kurulum günü  
-**Versiyon:** 1.0.0  
+**Son Güncelleme:** Core paketi tamamlandı, token mekanizması kaldırıldı  
+**Versiyon:** 1.1.0  
 **Bakım:** Bu dosya her önemli mimari karar sonrası güncellenmelidir.
+
+---
+
+## 📝 DEĞİŞİKLİK GEÇMİŞİ (CHANGELOG)
+
+### v1.1.0 - Core Paketi Tamamlandı
+- ✅ Core paketi modülleri tamamlandı (Errors, Cache, Network, Store, DI)
+- ✅ Token mekanizması kaldırıldı (ADR-007)
+- ✅ VS Code launch.json yapılandırıldı
+- ✅ Proje dokümantasyonu güncellendi
+
+### v1.0.0 - İlk Kurulum
+- ✅ Melos workspace kuruldu
+- ✅ Proje yapısı oluşturuldu
+- ✅ Mimari anayasa hazırlandı
 
