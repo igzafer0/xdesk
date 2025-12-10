@@ -46,6 +46,10 @@ dependencies:
   finance:
     path: packages/features/finance
 
+  # Home package (local dependency)
+  home:
+    path: packages/features/home
+
 dev_dependencies:
   flutter_test:
     sdk: flutter

@@ -1,5 +1,5 @@
-name: finance
-description: "Finance package - Borsa & Finans Modülü"
+name: home
+description: "Home package - Ana Sayfa Modülü"
 version: 0.0.1
 homepage:
 
@@ -19,21 +19,16 @@ dependencies:
   design_system:
     path: ../../design_system
 
+  # Finance feature (widget'ları kullanmak için)
+  finance:
+    path: ../finance
+
   # State Management
   mobx: ^2.2.0+1
   flutter_mobx: ^2.2.0+1
 
   # Dependency Injection
   get_it: ^8.0.2
-
-  # Functional Programming
-  fpdart: ^1.2.0
-
-  # Code Generation
-  json_annotation: ^4.9.0
-
-  # Chart Library
-  fl_chart: ^0.69.0
 
 dev_dependencies:
   flutter_test:
@@ -43,7 +38,6 @@ dev_dependencies:
   # Code Generation
   build_runner: ^2.4.13
   mobx_codegen: ^2.6.0+1
-  json_serializable: ^6.8.0
 
 # For information on the generic Dart part of this file, see the
 # following page: https://dart.dev/tools/pub/pubspec

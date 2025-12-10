@@ -19,3 +19,6 @@ export 'src/presentation/stores/euro_chart_store.dart';
 export 'src/presentation/widgets/chart_common_widgets.dart';
 export 'src/presentation/widgets/dollar_chart_widget.dart';
 export 'src/presentation/widgets/euro_chart_widget.dart';
+
+// DI
+export 'src/di/finance_injection.dart';
