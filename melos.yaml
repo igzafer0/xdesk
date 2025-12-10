@@ -1,0 +1,38 @@
+name: xdesk
+repository: https://github.com/your-org/xdesk
+
+packages:
+  - "packages/**"
+
+command:
+  bootstrap:
+    scope: "*"
+    ignore:
+      - "**/*.g.dart"
+      - "**/*.freezed.dart"
+      - "**/*.mocks.dart"
+    runPubGetInParallel: true
+
+scripts:
+  build:
+    description: "Tüm paketlerde kod üretimini çalıştır (MobX, Retrofit, JSON)"
+    run: |
+      melos exec --scope="*" -- flutter pub run build_runner build --delete-conflicting-outputs
+
+  clean:
+    description: "Tüm build dosyalarını ve cache'leri temizle"
+    run: |
+      melos exec --scope="*" -- flutter clean
+      melos exec --scope="*" -- flutter pub get
+      melos exec --scope="*" -- dart run build_runner clean
+
+  test:diff:
+    description: "Sadece değişiklik yapılan paketin testlerini çalıştır"
+    run: |
+      melos exec --since="HEAD~1" --scope="*" -- flutter test
+
+  test:all:
+    description: "Tüm paketlerin testlerini çalıştır"
+    run: |
+      melos exec --scope="*" -- flutter test
+
