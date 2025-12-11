@@ -14,9 +14,11 @@ export 'src/data/data_sources/currency_remote_source.dart';
 export 'src/data/repositories/currency_repository_impl.dart';
 
 // Presentation
+export 'src/presentation/stores/currency_chart_store_base.dart';
 export 'src/presentation/stores/dollar_chart_store.dart';
 export 'src/presentation/stores/euro_chart_store.dart';
 export 'src/presentation/widgets/chart_common_widgets.dart';
+export 'src/presentation/widgets/currency_chart_widget.dart';
 export 'src/presentation/widgets/dollar_chart_widget.dart';
 export 'src/presentation/widgets/euro_chart_widget.dart';
 

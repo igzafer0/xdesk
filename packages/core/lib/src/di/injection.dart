@@ -17,17 +17,19 @@ final getIt = GetIt.instance;
 Future<void> configureDependencies({
   required String apiBaseUrl,
 }) async {
-  // Hive Storage'ı başlat (Injectable ile otomatik register edilecek ama init gerekli)
-  final storage = HiveStorage();
-  final storageInitResult = await storage.init();
-  
-  storageInitResult.fold(
-    (failure) => throw Exception('Storage başlatılamadı: ${failure.message}'),
-    (_) => null,
-  );
-
-  // Injectable ile otomatik register (HiveStorage)
+  // Injectable ile diğer bağımlılıkları register et (HiveStorage dahil)
   getIt.init();
+
+  // Hive Storage'ı başlat (Injectable ile oluşturulan instance'ı kullan)
+  // Injectable LazySingleton oluşturdu, şimdi başlatıyoruz
+  final storage = getIt<LocalStorage>();
+  if (storage is HiveStorage) {
+    final storageInitResult = await storage.init();
+    storageInitResult.fold(
+      (failure) => throw Exception('Storage başlatılamadı: ${failure.message}'),
+      (_) => null,
+    );
+  }
 
   // API Client için config gerekli, manuel register (Injectable değil, config gerekiyor)
   if (!getIt.isRegistered<ApiClient>()) {

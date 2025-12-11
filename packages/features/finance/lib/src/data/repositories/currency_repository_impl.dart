@@ -1,5 +1,4 @@
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
 import 'package:fpdart/fpdart.dart';
 import 'package:injectable/injectable.dart';
 import 'package:core/core.dart';
@@ -9,18 +8,17 @@ import '../../domain/repositories/currency_repository.dart';
 import '../data_sources/currency_remote_source.dart';
 import '../dtos/currency_chart_point_dto.dart';
 
-/// Isolate'te çalışacak cache JSON parsing fonksiyonu (top-level olmalı)
 List<CurrencyChartPointDTO> parseCurrencyDataFromCache(List<dynamic> cachedData) {
   return cachedData
-      .map((json) => CurrencyChartPointDTO.fromJson(
-            json as Map<String, dynamic>,
-          ))
+      .map((json) {
+        final jsonMap = json is Map
+            ? Map<String, dynamic>.from(json as Map)
+            : json as Map<String, dynamic>;
+        return CurrencyChartPointDTO.fromJson(jsonMap);
+      })
       .toList();
 }
 
-/// Currency Repository Implementation
-/// 
-/// Cache-first yaklaşımı: Önce cache, sonra API
 @LazySingleton(as: CurrencyRepository)
 class CurrencyRepositoryImpl implements CurrencyRepository {
   final CurrencyRemoteSource remoteSource;
@@ -52,58 +50,63 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
     );
   }
 
-  /// Ortak currency history getirme metodu
-  Future<Either<Failure, CurrencyChart>> _getCurrencyHistory({
+  @override
+  Future<Either<Failure, CurrencyChart?>> getCachedDollarHistory() async {
+    return _getCachedCurrencyHistory(
+      cacheKey: _dollarCacheKey,
+      currency: 'USD',
+    );
+  }
+
+  @override
+  Future<Either<Failure, CurrencyChart?>> getCachedEuroHistory() async {
+    return _getCachedCurrencyHistory(
+      cacheKey: _euroCacheKey,
+      currency: 'EUR',
+    );
+  }
+
+  Future<Either<Failure, CurrencyChart?>> _getCachedCurrencyHistory({
     required String cacheKey,
-    required Future<Either<Failure, List<CurrencyChartPointDTO>>> Function() remoteCall,
     required String currency,
   }) async {
-    // 1. Önce cache'den kontrol et (Cache-First)
     final cacheResult = await cache.get<List<dynamic>>(key: cacheKey);
-    
-    CurrencyChart? cachedChart;
-    // fold() sync bir metod, async işlemi dışarıda yap
+
     final cacheEither = cacheResult.fold(
       (failure) => Left<Failure, List<dynamic>>(failure),
       (cachedData) {
-        if (cachedData == null) {
+        if (cachedData == null || cachedData.isEmpty) {
           return Right<Failure, List<dynamic>>(<dynamic>[]);
         }
         return Right<Failure, List<dynamic>>(cachedData);
       },
     );
 
-    // Async işlemi (compute) fold dışında yap
     if (cacheEither.isLeft()) {
-      // Cache hatası - cachedChart null kalır, API'ye devam et
-      cachedChart = null;
-    } else {
-      final cachedData = cacheEither.getOrElse((l) => <dynamic>[]);
-      if (cachedData.isEmpty) {
-        cachedChart = null;
-      } else {
-        try {
-          // JSON parsing'i isolate'te yap
-          final dtos = await compute(parseCurrencyDataFromCache, cachedData);
-          cachedChart = _mapToEntity(dtos, currency: currency);
-        } catch (e) {
-          // Cache parse hatası - logla ve API'ye devam et
-          // (Cache hatası kritik değil, API'den veri çekilebilir)
-          debugPrint('Cache parse hatası ($currency): ${e.toString()}');
-          cachedChart = null;
-        }
-      }
+      return cacheEither.map((r) => null);
     }
 
-    // 2. API'den güncel veriyi çek
+    final cachedData = cacheEither.getOrElse((l) => <dynamic>[]);
+    if (cachedData.isEmpty) {
+      return Right<Failure, CurrencyChart?>(null);
+    }
+
+    try {
+      final dtos = await compute(parseCurrencyDataFromCache, cachedData);
+      final chart = _mapToEntity(dtos, currency: currency);
+      return Right<Failure, CurrencyChart?>(chart);
+    } catch (e) {
+      return Right<Failure, CurrencyChart?>(null);
+    }
+  }
+
+  Future<Either<Failure, CurrencyChart>> _getCurrencyHistory({
+    required String cacheKey,
+    required Future<Either<Failure, List<CurrencyChartPointDTO>>> Function() remoteCall,
+    required String currency,
+  }) async {
     final remoteResult = await remoteCall();
 
-    // API hatası - cache'de varsa onu döndür
-    if (remoteResult.isLeft() && cachedChart != null) {
-      return Right(cachedChart);
-    }
-
-    // API başarılı - veriyi işle
     if (remoteResult.isLeft()) {
       final failure = remoteResult.fold(
         (f) => f,
@@ -111,19 +114,16 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
       );
       return Left<Failure, CurrencyChart>(failure);
     }
-    
+
     final dtos = remoteResult.getOrElse((l) => <CurrencyChartPointDTO>[]);
-    
-    // 3. Cache'e kaydet
+
     final jsonList = dtos.map((dto) => dto.toJson()).toList();
     await cache.save(key: cacheKey, value: jsonList);
 
-    // 4. Entity'ye dönüştür ve döndür
     final chart = _mapToEntity(dtos, currency: currency);
     return Right(chart);
   }
 
-  /// DTO listesini Entity'ye dönüştürür
   CurrencyChart _mapToEntity(
     List<CurrencyChartPointDTO> dtos, {
     required String currency,
@@ -131,13 +131,10 @@ class CurrencyRepositoryImpl implements CurrencyRepository {
     final points = dtos.map((dto) {
       return CurrencyChartPoint(
         value: dto.value,
-        createdAt: DateTime.parse(dto.createdAt), // UTC için karşılaştırma
-        originalCreatedAt: dto.createdAt, // API'den gelen orijinal string
+        createdAt: DateTime.parse(dto.createdAt),
+        originalCreatedAt: dto.createdAt,
       );
     }).toList();
-
-    // Tarihe göre sırala (eski -> yeni)
-    points.sort((a, b) => a.createdAt.compareTo(b.createdAt));
 
     return CurrencyChart(
       currency: currency,

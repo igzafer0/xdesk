@@ -2,17 +2,15 @@ import 'package:mobx/mobx.dart';
 import 'package:injectable/injectable.dart';
 import '../../domain/entities/currency_chart.dart';
 import '../../domain/use_cases/get_dollar_history.dart';
+import 'currency_chart_store_base.dart';
 
 part 'dollar_chart_store.g.dart';
 
-/// Dollar Chart Store
-/// 
-/// MobX store - State yönetimi
 @lazySingleton
 @StoreConfig()
 class DollarChartStore = _DollarChartStore with _$DollarChartStore;
 
-abstract class _DollarChartStore with Store {
+abstract class _DollarChartStore with Store implements CurrencyChartStoreBase {
   final GetDollarHistory getDollarHistory;
 
   _DollarChartStore(this.getDollarHistory);
@@ -23,17 +21,32 @@ abstract class _DollarChartStore with Store {
   @observable
   String? errorMessage;
 
-  /// Dolar history verilerini yükler
+  @computed
+  CurrencyChart? get last24HoursChart => chart?.last24Hours();
+
   @action
   Future<void> loadChart() async {
     errorMessage = null;
+
+    final cachedResult = await getDollarHistory.getCached();
+    CurrencyChart? cachedChart;
+    cachedResult.fold(
+      (_) => null,
+      (chart) => cachedChart = chart,
+    );
+
+    if (cachedChart != null) {
+      chart = cachedChart;
+    }
 
     final result = await getDollarHistory();
 
     result.fold(
       (failure) {
         errorMessage = failure.message;
-        chart = null;
+        if (cachedChart == null) {
+          chart = null;
+        }
       },
       (loadedChart) {
         chart = loadedChart;
@@ -42,10 +55,8 @@ abstract class _DollarChartStore with Store {
     );
   }
 
-  /// Chart'ı yeniler
   @action
   Future<void> refresh() async {
     await loadChart();
   }
 }
-

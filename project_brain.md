@@ -147,6 +147,7 @@ Bu maddeler **ASLA** yapılmamalıdır:
 - ✅ **Data:** CurrencyRemoteSource, CurrencyRepositoryImpl, DTOs
 - ✅ **Presentation:** DollarChartStore, EuroChartStore, Chart widgets (fl_chart)
 - ✅ **Features:** Dollar ve Euro chart'ları, son 24 saat verisi, cache-first yaklaşım
+- ✅ **Cache:** Cache okuma metodları (getCached), Hive type cast düzeltmesi
 - ✅ **DI:** Finance injection setup (Injectable annotations)
 
 #### Home Modülü (packages/features/home)
@@ -381,13 +382,22 @@ melos run clean
 
 ---
 
-**Son Güncelleme:** Finance ve Home modülleri tamamlandı, Design System eklendi  
-**Versiyon:** 1.2.0  
+**Son Güncelleme:** Cache-first yaklaşımı tamamlandı, Hive storage başlatma sorunu düzeltildi  
+**Versiyon:** 1.3.0  
 **Bakım:** Bu dosya her önemli mimari karar sonrası güncellenmelidir.
 
 ---
 
 ## 📝 DEĞİŞİKLİK GEÇMİŞİ (CHANGELOG)
+
+### v1.3.0 - Cache-First Implementation Tamamlandı
+- ✅ Cache-first yaklaşımı uygulandı (ilk cache'den göster, sonra HTTP'den güncelle)
+- ✅ Hive storage başlatma sorunu düzeltildi (Injectable ile uyumlu)
+- ✅ Cache okuma metodları eklendi (getCachedDollarHistory, getCachedEuroHistory)
+- ✅ Hive type cast sorunu düzeltildi (_Map<dynamic, dynamic> → Map<String, dynamic>)
+- ✅ Skeleton loading kaldırıldı (project_brain.md'ye eklendi)
+- ✅ Debug print'ler ve gereksiz açıklama satırları temizlendi
+- ✅ Store'larda cache-first mantığı: Önce cache göster, sonra HTTP güncelle
 
 ### v1.2.0 - Finance ve Home Modülleri Tamamlandı
 - ✅ Design System paketi tamamlandı (Tokens, Components)
@@ -396,7 +406,6 @@ melos run clean
 - ✅ Module independence pattern uygulandı (ADR-008)
 - ✅ Auto-refresh mekanizması eklendi (10 saniye, ADR-009)
 - ✅ JSON parsing isolate'te yapılıyor (ADR-010)
-- ✅ Cache parse hataları loglanıyor (debugPrint)
 - ✅ `fold()` içinde async callback sorunu düzeltildi
 - ✅ Injectable annotations kullanılıyor
 - ✅ Ana uygulama entegrasyonu tamamlandı

@@ -39,7 +39,7 @@ void main() async {
     ],
   );
 
-  // Home store'u başlat (timer'ı başlatır)
+  // Home store'u başlat (timer'ı başlatır ve ilk yüklemeyi yapar)
   final homeStore = GetIt.instance<HomeStore>();
   homeStore.initialize();
   
