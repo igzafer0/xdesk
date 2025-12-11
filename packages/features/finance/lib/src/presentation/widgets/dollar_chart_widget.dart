@@ -1,8 +1,8 @@
 import 'package:finance/finance.dart';
-import 'currency_chart_widget.dart';
+import 'package:flutter/material.dart';
 
 /// Dollar Chart Widget
-/// 
+///
 /// DollarChartStore için wrapper widget.
 /// Generic CurrencyChartWidget'ı kullanır.
 class DollarChartWidget extends StatelessWidget {

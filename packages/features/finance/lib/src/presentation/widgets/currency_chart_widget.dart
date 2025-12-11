@@ -8,7 +8,7 @@ import '../../domain/entities/currency_chart.dart';
 import '../../domain/entities/currency_chart_point.dart';
 
 /// Generic Currency Chart Widget
-/// 
+///
 /// Tüm currency chart'ları için ortak widget.
 /// Store'ları CurrencyChartStoreBase interface'i üzerinden kullanır.
 class CurrencyChartWidget extends StatelessWidget {
@@ -47,10 +47,10 @@ class _ChartContent extends StatefulWidget {
 }
 
 class _ChartContentState extends State<_ChartContent> {
-  late final List<CurrencyChartPoint> _points;
-  late final double _minValue;
-  late final double _maxValue;
-  late final List<FlSpot> _spotData;
+  late List<CurrencyChartPoint> _points;
+  late double _minValue;
+  late double _maxValue;
+  late List<FlSpot> _spotData;
 
   @override
   void initState() {
@@ -68,14 +68,14 @@ class _ChartContentState extends State<_ChartContent> {
 
   void _calculateChartData() {
     _points = widget.chart.points;
-    
+
     if (_points.isEmpty) {
       _minValue = 0.0;
       _maxValue = 0.0;
       _spotData = [];
       return;
     }
-    
+
     double min = double.infinity;
     double max = double.negativeInfinity;
     _spotData = List.generate(_points.length, (index) {
@@ -84,7 +84,7 @@ class _ChartContentState extends State<_ChartContent> {
       if (value > max) max = value;
       return FlSpot(index.toDouble(), value);
     });
-    
+
     _minValue = min;
     _maxValue = max;
   }
@@ -145,39 +145,39 @@ class _ChartContentState extends State<_ChartContent> {
                   },
                 ),
               ),
-              leftTitles: AxisTitles(
-                sideTitles: SideTitles(
-                  showTitles: true,
-                  reservedSize: 50,
-                  interval: (_maxValue - _minValue) / 4,
-                  getTitlesWidget: (value, meta) {
-                    return Text(
-                      value.toStringAsFixed(2),
-                      style: AppTypography.labelSmall,
-                    );
-                  },
-                ),
-              ),
+              leftTitles: AxisTitles(sideTitles: SideTitles(showTitles: false)),
             ),
-            borderData: FlBorderData(
-              show: true,
-              border: Border.all(color: AppColors.borderPrimary),
-            ),
+            borderData: FlBorderData(show: false),
             minX: 0,
             maxX: (_points.length - 1).toDouble(),
             minY: _minValue - (_maxValue - _minValue) * 0.1,
             maxY: _maxValue + (_maxValue - _minValue) * 0.1,
+            lineTouchData: LineTouchData(
+              touchTooltipData: LineTouchTooltipData(
+                getTooltipColor: (_) => Colors.black,
+                tooltipRoundedRadius: 8,
+                tooltipMargin: 20,
+                getTooltipItems: (List<LineBarSpot> touchedSpots) {
+                  return touchedSpots.map((LineBarSpot touchedSpot) {
+                    return LineTooltipItem(
+                      touchedSpot.y.toStringAsFixed(3),
+                      AppTypography.labelMedium.copyWith(color: Colors.white),
+                    );
+                  }).toList();
+                },
+              ),
+            ),
             lineBarsData: [
               LineChartBarData(
                 spots: _spotData,
                 isCurved: true,
                 color: AppColors.textPrimary,
-                barWidth: 2,
+                barWidth: 1,
                 isStrokeCapRound: true,
                 dotData: const FlDotData(show: false),
                 belowBarData: BarAreaData(
                   show: true,
-                  color: AppColors.textPrimary.withOpacity(0.1),
+                  color: AppColors.textPrimary.withValues(alpha: 0.1),
                 ),
               ),
             ],
@@ -187,4 +187,3 @@ class _ChartContentState extends State<_ChartContent> {
     );
   }
 }
-
